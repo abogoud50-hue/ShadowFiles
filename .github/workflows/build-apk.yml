@@ -10,46 +10,31 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    container:
-      image: barichello/godot-ci:4.3
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Android SDK
+      - name: Setup Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.3.0
+          use-dotnet: false
+          include-templates: true
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
         run: |
-          yes | sdkmanager --licenses || true
-          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
-          mkdir -p /github/home/.android
-
-      - name: Install Godot export templates
-        run: |
-          mkdir -p /github/home/.local/share/godot/export_templates/4.3.stable
-
-          wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
-
-          unzip -q Godot_v4.3-stable_export_templates.tpz -d /tmp/templates
-
-          cp /tmp/templates/templates/android_debug.apk \
-            /github/home/.local/share/godot/export_templates/4.3.stable/
-
-          cp /tmp/templates/templates/android_release.apk \
-            /github/home/.local/share/godot/export_templates/4.3.stable/
-
-          cp /tmp/templates/templates/android_source.zip \
-            /github/home/.local/share/godot/export_templates/4.3.stable/
-
-          echo "4.3.stable" \
-            > /github/home/.local/share/godot/export_templates/4.3.stable/version.txt
-
-          echo "Installed templates:"
-          ls -lah /github/home/.local/share/godot/export_templates/4.3.stable
+          sdkmanager "platform-tools"
+          sdkmanager "platforms;android-34"
+          sdkmanager "build-tools;34.0.0"
 
       - name: Create debug keystore
         run: |
+          mkdir -p ~/.android
           keytool -genkeypair \
-            -keystore /github/home/.android/debug.keystore \
+            -keystore ~/.android/debug.keystore \
             -storepass android \
             -alias androiddebugkey \
             -keypass android \
@@ -58,19 +43,7 @@ jobs:
             -validity 10000 \
             -dname "CN=Android Debug,O=Android,C=US"
 
-      - name: Configure Android paths
-        run: |
-          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
-          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-
-          JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
-          echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
-
       - name: Build APK
-        env:
-          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /github/home/.android/debug.keystore
-          GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
-          GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
         run: |
           mkdir -p build
           godot --headless --path . --export-debug "Android" build/ShadowFiles.apk
