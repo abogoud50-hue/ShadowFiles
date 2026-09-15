@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<rect width="512" height="512" rx="100" fill="#10131d"/>
+<circle cx="256" cy="220" r="125" fill="#252d40" stroke="#d7b875" stroke-width="12"/>
+<path d="M150 220 Q256 115 362 220 L340 245 Q256 180 172 245Z" fill="#d7b875"/>
+<circle cx="215" cy="250" r="12" fill="#f1eee7"/><circle cx="297" cy="250" r="12" fill="#f1eee7"/>
+<path d="M205 305 Q256 335 307 305" fill="none" stroke="#d7b875" stroke-width="10"/>
+<text x="256" y="430" text-anchor="middle" fill="#f1eee7" font-size="42" font-family="sans-serif">SHADOW</text>
+</svg>
