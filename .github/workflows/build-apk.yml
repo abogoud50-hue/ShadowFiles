@@ -26,11 +26,25 @@ jobs:
       - name: Install Godot export templates
         run: |
           mkdir -p /github/home/.local/share/godot/export_templates/4.3.stable
+
           wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
+
           unzip -q Godot_v4.3-stable_export_templates.tpz -d /tmp/templates
-          cp /tmp/templates/templates/android_debug.apk /github/home/.local/share/godot/export_templates/4.3.stable/
-          cp /tmp/templates/templates/android_release.apk /github/home/.local/share/godot/export_templates/4.3.stable/
-          echo "4.3.stable" > /github/home/.local/share/godot/export_templates/4.3.stable/version.txt
+
+          cp /tmp/templates/templates/android_debug.apk \
+            /github/home/.local/share/godot/export_templates/4.3.stable/
+
+          cp /tmp/templates/templates/android_release.apk \
+            /github/home/.local/share/godot/export_templates/4.3.stable/
+
+          cp /tmp/templates/templates/android_source.zip \
+            /github/home/.local/share/godot/export_templates/4.3.stable/
+
+          echo "4.3.stable" \
+            > /github/home/.local/share/godot/export_templates/4.3.stable/version.txt
+
+          echo "Installed templates:"
+          ls -lah /github/home/.local/share/godot/export_templates/4.3.stable
 
       - name: Create debug keystore
         run: |
@@ -48,6 +62,7 @@ jobs:
         run: |
           echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
           echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+
           JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
           echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
 
