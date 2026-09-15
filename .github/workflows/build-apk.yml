@@ -17,27 +17,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Android export templates
+      - name: Install Android SDK
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          mkdir -p /github/home/.android
+
+      - name: Install Godot export templates
         run: |
           mkdir -p /github/home/.local/share/godot/export_templates/4.3.stable
           wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
-          mkdir -p /tmp/godot_templates
-          unzip -q Godot_v4.3-stable_export_templates.tpz -d /tmp/godot_templates
-          cp /tmp/godot_templates/templates/android_debug.apk /github/home/.local/share/godot/export_templates/4.3.stable/
-          cp /tmp/godot_templates/templates/android_release.apk /github/home/.local/share/godot/export_templates/4.3.stable/
+          unzip -q Godot_v4.3-stable_export_templates.tpz -d /tmp/templates
+          cp /tmp/templates/templates/android_debug.apk /github/home/.local/share/godot/export_templates/4.3.stable/
+          cp /tmp/templates/templates/android_release.apk /github/home/.local/share/godot/export_templates/4.3.stable/
           echo "4.3.stable" > /github/home/.local/share/godot/export_templates/4.3.stable/version.txt
-
-      - name: Configure Java
-        run: |
-          export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
-          echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
-          echo "Java path: $JAVA_HOME"
 
       - name: Create debug keystore
         run: |
-          mkdir -p /github/home/.android
           keytool -genkeypair \
-            -v \
             -keystore /github/home/.android/debug.keystore \
             -storepass android \
             -alias androiddebugkey \
@@ -47,7 +44,14 @@ jobs:
             -validity 10000 \
             -dname "CN=Android Debug,O=Android,C=US"
 
-      - name: Build Android APK
+      - name: Configure Android paths
+        run: |
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+          echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
+
+      - name: Build APK
         env:
           GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /github/home/.android/debug.keystore
           GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
